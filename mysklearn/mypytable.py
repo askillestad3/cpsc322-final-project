@@ -148,3 +148,11 @@ class MyPyTable:
 
             stats.append([col_name, min_val, max_val, mid_val, avg_val, median_val])
         return MyPyTable(["attribute", "min", "max", "mid", "avg", "median"], stats)
+
+    def get_shape(self):
+        """Computes the dimension of the table (N x M).
+
+        Returns:
+            tuple: (N, M) where N is number of rows and M is number of columns
+        """
+        return len(self.data), len(self.column_names)
