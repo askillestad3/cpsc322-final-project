@@ -141,6 +141,8 @@ def test_rf_fit_creates_subtrees_with_proper_bootstrap_samples():
     rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
     assert len(rf.trees) == 10
     for tree in rf.trees:
+        assert tree.X_train is not None
+        assert tree.y_train is not None
         for x, y in zip(tree.X_train, tree.y_train):
             assert x in X_TRAIN_INTERVIEW
             assert y in Y_TRAIN_INTERVIEW
