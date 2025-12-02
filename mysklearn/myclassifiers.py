@@ -126,7 +126,7 @@ class MyDecisionTreeClassifier:
                     # Attribute split
                     case "Attribute":
                         # Get the attribute index
-                        attribute_idx = int(subtree[1][3])  # Index is 4th character in default name
+                        attribute_idx = int(subtree[1][3:])  # Index is 4th character in default name
 
                         # Get this row's value for the splitting attriute
                         attribute_val = X_row[attribute_idx]
