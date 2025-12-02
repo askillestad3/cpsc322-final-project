@@ -135,10 +135,20 @@ class MyRandomForestClassifier():
         self.y_train = None
         self.trees: list[RandomForestDecisionTree] = []
 
+        # "private" attribute
+        self._y_val_dist = {}
+
     def fit(self, X_train: list[list], y_train: list):
         # Set X_train and y_train attributes
         self.X_train = X_train
         self.y_train = y_train
+
+        # Find distribution of y values
+        for val in self.y_train:
+            if val not in self._y_val_dist:
+                self._y_val_dist[val] = 1
+            else:
+                self._y_val_dist[val] += 1
 
         # Generate N boostrap samples
         bootstrap_samples = [tuple(bootstrap_sample(self.X_train, self.y_train)) for _ in range(self.N)]
@@ -184,6 +194,46 @@ class MyRandomForestClassifier():
         # Add all the best trees to the trees attribute
         self.trees = [all_trees[i] for i in tree_accuracy_idx]
 
-    def predict(self, X_test) -> list:
-        return []
+    def predict(self, X_test: list[list]) -> list:
+        # Verify that trees have been fitted
+        if len(self.trees) == 0:
+            raise ValueError("Cannot predict without fitted trees, try running fit() method first")
+
+        # Get every tree's predictions for every test row
+        tree_predictions = [tree.predict(X_test) for tree in self.trees]
+
+        # Zip the predictions to get lists of predictions for each row
+        predictions_by_row = list(zip(*tree_predictions))
+
+        # Initialize the output prediction list
+        y_pred = []
+
+        # Get a majority vote for each test row
+        for predictions in predictions_by_row:
+            # Count the occurrences of each y label
+            y_label_counts = {}
+            for prediction in predictions:
+                if prediction not in y_label_counts:
+                    y_label_counts[prediction] = 1
+                else:
+                    y_label_counts[prediction] += 1
+
+            # Find the maximum number of votes for any one predictions
+            most_y_votes = max(y_label_counts.values())
+
+            # Find all y values tying for the maximum number of votes
+            tying_y_labels = []
+            for y_label, vote_count in y_label_counts.items():
+                if vote_count == most_y_votes:
+                    tying_y_labels.append(y_label)
+
+            # If there is only one tying y, predict it and continue to next row
+            if len(tying_y_labels) == 1:
+                y_pred.append(tying_y_labels[0])
+                continue
+
+            # Otherwise, predict the most common of the tying y labels
+            y_pred.append(max(tying_y_labels, key=lambda y: self._y_val_dist[y]))
+
+        return y_pred
 

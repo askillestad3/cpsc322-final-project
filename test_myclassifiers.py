@@ -1,4 +1,6 @@
 
+import pytest
+
 from mysklearn import MyRandomForestClassifier
 
 """Test Data"""
@@ -215,4 +217,9 @@ def test_rf_predict_makes_expected_predictions():
     rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
     y_pred = rf.predict(X_TEST_INTERVIEW)
     assert y_pred == Y_TEST_INTERVIEW
+
+def test_rf_predict_cannot_predict_before_fit():
+    rf = MyRandomForestClassifier(N=10)
+    with pytest.raises(ValueError):
+        rf.predict(X_TEST_INTERVIEW)
     
