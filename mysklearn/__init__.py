@@ -5,6 +5,10 @@
 Note: this is the package initializer for mysklearn
 """
 
+from .myclassifiers import *
+from .myevaluation import *
+from .mypytable import *
+
 __all__ = [
     # Classifiers
     'MyKNeighborsClassifier',
@@ -17,7 +21,10 @@ __all__ = [
     'bootstrap_sample',
     'confusion_matrix',
     'accuracy_score',
-    'compute_precision_recall_f1',
+    'binary_precision_score',
+    'binary_recall_score',
+    'binary_f1_score',
+    'classification_report',
     # Data handling
     'MyPyTable'
 ]
