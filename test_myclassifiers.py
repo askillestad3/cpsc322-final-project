@@ -139,6 +139,7 @@ def test_rf_fit_generates_correct_number_of_valid_trees():
 def test_rf_fit_creates_subtrees_with_proper_bootstrap_samples():
     rf = MyRandomForestClassifier(N=10)
     rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    assert len(rf.trees) == 10
     for tree in rf.trees:
         for x, y in zip(tree.X_train, tree.y_train):
             assert x in X_TRAIN_INTERVIEW

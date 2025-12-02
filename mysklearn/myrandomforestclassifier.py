@@ -1,5 +1,5 @@
 
-from myclassifiers import MyDecisionTreeClassifier
+from .myclassifiers import MyDecisionTreeClassifier
 
 class RandomForestDecisionTree(MyDecisionTreeClassifier):
     def __init__(self, F: int | None=None):
