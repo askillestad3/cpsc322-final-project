@@ -63,7 +63,7 @@ class MyDecisionTreeClassifier:
         self.y_train = y_train
 
         # Find all possible values of all attributes
-        attribute_vals = [[] for i in range(len(X_train[0]))]
+        attribute_vals = [[] for _ in range(len(X_train[0]))]
         for row in X_train:
             for i, val in enumerate(row):
                 if val not in attribute_vals[i]:
