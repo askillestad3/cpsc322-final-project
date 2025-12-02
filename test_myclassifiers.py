@@ -4,7 +4,7 @@ from mysklearn import MyRandomForestClassifier
 """Test Data"""
 
 # Define interview dataset
-HEADER_INTERVIEW = ["level", "lang", "tweets", "phd", "interviewed_well"]
+# HEADER_INTERVIEW = ["level", "lang", "tweets", "phd", "interviewed_well"]
 X_TRAIN_INTERVIEW = [
     ["Senior", "Java", "no", "no"],     # False
     ["Senior", "Java", "no", "yes"],    # False
@@ -30,8 +30,16 @@ INTERVIEW_ATTRIBUTE_VALS = [
     ["no", "yes"],
     ["no", "yes"]
 ]
-
 INTERVIEW_Y_VALS = ["False", "True"]
+
+X_TEST_INTERVIEW = [
+    ["Junior", "R", "yes", "no"],
+    ["Senior", "Java", "no", "yes"],
+    ["Mid", "Java", "no", "yes"],
+    ["Senior", "R", "yes", "no"],
+    ["Senior", "Python", "no", "yes"]
+]
+Y_TEST_INTERVIEW = ["True", "False", "True", "True", "False"]
 
 """Utility Functions"""
 
@@ -63,6 +71,7 @@ def validate_decision_tree(tree: list | None, attribute_vals: list[list], y_vals
         case _:             # Unexpected node type
             assert False
 
+"""Unit Tests"""
 
 def test_rf_init_sets_parameters():
     # Providing only N
@@ -148,3 +157,62 @@ def test_rf_fit_creates_subtrees_with_proper_bootstrap_samples():
             assert y in Y_TRAIN_INTERVIEW
             x_idx = X_TRAIN_INTERVIEW.index(x)
             assert y == Y_TRAIN_INTERVIEW[x_idx]
+
+def test_rf_predict_returns_correct_number_of_valid_predictions():
+    # Providing only N
+    rf = MyRandomForestClassifier(N=10)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert len(y_pred) == 5
+    for pred in y_pred:
+        assert pred in INTERVIEW_Y_VALS
+
+    # Providing N and M
+    rf = MyRandomForestClassifier(N=20, M=7)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert len(y_pred) == 5
+    for pred in y_pred:
+        assert pred in INTERVIEW_Y_VALS
+
+    # Providing N and F
+    rf = MyRandomForestClassifier(N=15, F=3)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert len(y_pred) == 5
+    for pred in y_pred:
+        assert pred in INTERVIEW_Y_VALS
+
+    # Providing N, M, and F
+    rf = MyRandomForestClassifier(N=25, M=10, F=2)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert len(y_pred) == 5
+    for pred in y_pred:
+        assert pred in INTERVIEW_Y_VALS
+
+def test_rf_predict_makes_expected_predictions():
+    # Providing only N
+    rf = MyRandomForestClassifier(N=10)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert y_pred == Y_TEST_INTERVIEW
+
+    # Providing N and M
+    rf = MyRandomForestClassifier(N=20, M=7)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert y_pred == Y_TEST_INTERVIEW
+
+    # Providing N and F
+    rf = MyRandomForestClassifier(N=15, F=3)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert y_pred == Y_TEST_INTERVIEW
+
+    # Providing N, M, and F
+    rf = MyRandomForestClassifier(N=25, M=10, F=2)
+    rf.fit(X_TRAIN_INTERVIEW, Y_TRAIN_INTERVIEW)
+    y_pred = rf.predict(X_TEST_INTERVIEW)
+    assert y_pred == Y_TEST_INTERVIEW
+    
