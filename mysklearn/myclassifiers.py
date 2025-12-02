@@ -40,6 +40,9 @@ class MyDecisionTreeClassifier:
         self.y_train = None
         self.tree = None
 
+        # "private" attribute
+        self._y_val_dist = {}
+
     def fit(self, X_train, y_train):
         """Fits a decision tree classifier to X_train and y_train using the TDIDT
         (top down induction of decision tree) algorithm.
@@ -63,7 +66,7 @@ class MyDecisionTreeClassifier:
         self.y_train = y_train
 
         # Find all possible values of all attributes
-        attribute_vals = [[] for i in range(len(X_train[0]))]
+        attribute_vals = [[] for _ in range(len(X_train[0]))]
         for row in X_train:
             for i, val in enumerate(row):
                 if val not in attribute_vals[i]:
@@ -82,13 +85,13 @@ class MyDecisionTreeClassifier:
         y_vals.sort()
 
         # Find the frequency distribution of the y values
-        y_val_dist = {val: 0 for val in y_vals}
+        self._y_val_dist = {val: 0 for val in y_vals}
         for val in y_train:
-            y_val_dist[val] += 1
+            self._y_val_dist[val] += 1
 
         # Make the first recursive call to the TDIDT function and set the tree attribute
         self.tree = self._tdidt_recursive(list(range(len(X_train))), list(range(len(X_train[0]))),
-                                          attribute_vals, y_vals, y_val_dist, len(X_train))
+                                          attribute_vals, y_vals, len(X_train))
 
     def predict(self, X_test):
         """Makes predictions for test instances in X_test.
@@ -132,11 +135,19 @@ class MyDecisionTreeClassifier:
                         attribute_val = X_row[attribute_idx]
 
                         # Iterate through all the value branches until a match is found
+                        match_found = False
                         for value_branch in subtree[2:]:
                             # Check if value branch matches row's attribute value
                             if value_branch[1] == attribute_val:
                                 # Match found, set subtree to node at end of branch
+                                match_found = True
                                 subtree = value_branch[2]
+                                break
+
+                        # If no match was found, predict the most common y label
+                        if not match_found:
+                            prediction_found = True
+                            y_pred.append(max(self._y_val_dist.items(), key=lambda t: t[1])[0])
 
                     # Unexpected node label
                     case _:
@@ -220,7 +231,6 @@ class MyDecisionTreeClassifier:
             attributes: list[int],
             attribute_vals: list[list],
             y_vals: list,
-            y_val_dist: dict,
             prior_split_size: int
             ) -> list:
         """Recursive function to perform top-down induction of a decision tree.
@@ -265,7 +275,7 @@ class MyDecisionTreeClassifier:
                 return ["Leaf", most_common_y_vals[0], greatest_y_freq, prior_split_size]
             
             # Otherwise, return the leaf with the most common tying y overall
-            best_tying_y = max(most_common_y_vals, key=lambda y: y_val_dist[y])
+            best_tying_y = max(most_common_y_vals, key=lambda y: self._y_val_dist[y])
             return ["Leaf", best_tying_y, greatest_y_freq, prior_split_size]
         
         # Check if all the remaining instances already belong to the same class (base case)
@@ -314,7 +324,7 @@ class MyDecisionTreeClassifier:
             subtree.append(["Value", split_val, self._tdidt_recursive(split_indices,
                                                                       remaining_attributes,
                                                                       attribute_vals, y_vals,
-                                                                      y_val_dist, len(instances))])
+                                                                      len(instances))])
         
         # Return the resulting subtree
         return subtree
