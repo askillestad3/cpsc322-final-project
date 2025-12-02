@@ -1,6 +1,6 @@
 """
 This program will perform data preparation
-and exploratory data analysis (EDA) of a real-world auto dataset.
+and exploratory data analysis (EDA) of a real-world student dataset.
 """
 
 import copy
