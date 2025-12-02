@@ -1,0 +1,19 @@
+======================================================================
+STUDENT PERFORMANCE CLASSIFICATION RESULTS
+Dataset: student-mat.csv (Math Performance)
+Task: Predict pass/fail (G3 >= 10 = pass, G3 < 10 = fail)
+Features: All attributes EXCEPT G1, G2, G3
+======================================================================
+
+CLASSIFIER PERFORMANCE SUMMARY
+----------------------------------------------------------------------
+Classifier                Train/Test      10-Fold CV      Stratified CV  
+----------------------------------------------------------------------
+Dummy                      73.28%          67.09%          67.09%
+kNN                        67.18%          68.10%          67.85%
+Decision Tree              75.00%          75.00%          75.00%
+
+======================================================================
+BEST CLASSIFIER: Decision Tree
+Best Accuracy (Stratified 10-Fold CV): 75.00%
+======================================================================

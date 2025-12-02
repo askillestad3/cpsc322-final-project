@@ -3,8 +3,8 @@ utility functions for mysklearn package
 """
 
 import math
-
 import numpy as np
+import matplotlib.pyplot as plt
 
 def my_euclidean_distance(point1, point2):
     """compute euclidean distance"""
@@ -88,3 +88,51 @@ def calculate_entropy(
 
     return entropy
 
+def plot_frequency_diagram(table, col_name):
+    """Create a frequency bar chart for a categorical column"""
+    values = table.get_column(col_name, include_missing_values=False)
+    freq = {}
+    for v in values:
+        freq[v] = freq.get(v, 0) + 1
+    plt.bar(freq.keys(), freq.values())
+    plt.xlabel(col_name)
+    plt.ylabel("Frequency")
+    plt.title(f"Frequency of {col_name}")
+    plt.show()
+
+def plot_histogram(table, col_name, bins=10):
+    """Create a histogram for a numeric column"""
+    values = table.get_column(col_name, include_missing_values=False)
+    plt.hist(values, bins=bins)
+    plt.xlabel(col_name)
+    plt.ylabel("Count")
+    plt.title(f"Histogram of {col_name}")
+    plt.show()
+
+def plot_scatter(table, x_col, y_col):
+    """Create a scatter plot between two numeric columns"""
+    x = table.get_column(x_col, include_missing_values=False)
+    y = table.get_column(y_col, include_missing_values=False)
+    plt.scatter(x, y)
+    plt.xlabel(x_col)
+    plt.ylabel(y_col)
+    plt.title(f"{y_col} vs {x_col}")
+    plt.show()
+
+def plot_box_whisker_by_category(table, category_col, value_col):
+    """Creates a box-whisker plot for a numeric column grouped by categories"""
+    categories = sorted(list(set(table.get_column(category_col))))
+    data = []
+    for cat in categories:
+        cat_vals = [
+            row[table.column_names.index(value_col)]
+            for row in table.data
+            if row[table.column_names.index(category_col)] == cat
+            and row [table.column_names.index(value_col)] != "NA"
+        ]
+        data.append(cat_vals)
+    plt.boxplot(data, labels=categories)
+    plt.xlabel(category_col)
+    plt.ylabel(value_col)
+    plt.title(f"{value_col} distribution by {category_col}")
+    plt.show()
