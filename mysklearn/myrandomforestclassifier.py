@@ -4,6 +4,7 @@ import math
 import numpy as np
 
 from .myclassifiers import MyDecisionTreeClassifier
+from .myevaluation import bootstrap_sample
 from .myutils import calculate_entropy
 
 class RandomForestDecisionTree(MyDecisionTreeClassifier):
@@ -139,7 +140,10 @@ class MyRandomForestClassifier():
         self.X_train = X_train
         self.y_train = y_train
 
-        # 
+        # Generate N boostrap samples
+        bootstrap_samples = [tuple(bootstrap_sample(self.X_train, self.y_train)) for _ in range(self.N)]
+
+        
 
     def predict(self, X_test) -> list:
         return []

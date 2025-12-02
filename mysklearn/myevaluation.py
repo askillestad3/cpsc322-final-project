@@ -281,10 +281,10 @@ def bootstrap_sample(X, y=None, n_samples=None, random_state=None):
         n_samples = len(X)
 
     # Initialize the return lists
-    X_samples, X_out_of_bag, y_samples, y_out_of_bag = [], [], [], []
+    X_sample, X_out_of_bag, y_sample, y_out_of_bag = [], [], [], []
 
     # Select a number of indices equal to the length of X with replacement
-    sample_indices = np.random.choice(len(X), size=len(X), replace=True)
+    sample_indices = np.random.choice(len(X), size=n_samples, replace=True)
 
     # Find the out of bag indices
     out_of_bag_index_set = set(range(len(X)))
@@ -295,7 +295,7 @@ def bootstrap_sample(X, y=None, n_samples=None, random_state=None):
 
     # Use the indices to generate X_samples and X_out_of_bag
     for i in sample_indices:
-        X_samples.append(X[i])
+        X_sample.append(X[i])
 
     for i in out_of_bag_indices:
         X_out_of_bag.append(X[i])
@@ -303,16 +303,16 @@ def bootstrap_sample(X, y=None, n_samples=None, random_state=None):
     # If y is not none, use the indices to generate y_samples and y_out_of_bag
     if y is not None:
         for i in sample_indices:
-            y_samples.append(y[i])
+            y_sample.append(y[i])
 
         for i in out_of_bag_indices:
             y_out_of_bag.append(y[i])
 
     # If y is none, make both of its sample lists none
     if y is None:
-        y_samples, y_out_of_bag = None, None
+        y_sample, y_out_of_bag = None, None
 
-    return X_samples, X_out_of_bag, y_samples, y_out_of_bag
+    return X_sample, X_out_of_bag, y_sample, y_out_of_bag
 
 
 def confusion_matrix(y_true, y_pred, labels):
