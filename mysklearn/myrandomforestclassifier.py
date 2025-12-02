@@ -18,8 +18,8 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
             attributes: list[int],
             attribute_vals: list[list],
             y_vals: list,
-            y_val_dist: dict,
-            prior_split_size: int) -> list:
+            prior_split_size: int
+            ) -> list:
         """Recursive function to perform top-down induction of a decision tree. Identical to that
         used by MyDecisionTreeClassfier except that each iteration randomly selects F random
         candidate attributes
@@ -64,7 +64,7 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
                 return ["Leaf", most_common_y_vals[0], greatest_y_freq, prior_split_size]
             
             # Otherwise, return the leaf with the most common tying y overall
-            best_tying_y = max(most_common_y_vals, key=lambda y: y_val_dist[y])
+            best_tying_y = max(most_common_y_vals, key=lambda y: self._y_val_dist[y])
             return ["Leaf", best_tying_y, greatest_y_freq, prior_split_size]
         
         # Check if all the remaining instances already belong to the same class (base case)
@@ -119,7 +119,7 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
             subtree.append(["Value", split_val, self._tdidt_recursive(split_indices,
                                                                       remaining_attributes,
                                                                       attribute_vals, y_vals,
-                                                                      y_val_dist, len(instances))])
+                                                                      len(instances))])
         
         # Return the resulting subtree
         return subtree
@@ -135,8 +135,11 @@ class MyRandomForestClassifier():
         self.trees: list[RandomForestDecisionTree] = []
 
     def fit(self, X_train: list[list], y_train: list):
+        # Set X_train and y_train attributes
         self.X_train = X_train
         self.y_train = y_train
+
+        # 
 
     def predict(self, X_test) -> list:
         return []
