@@ -7,13 +7,14 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
         self.F = F
 
     def fit(self, X_train: list[list], y_train: list):
-        pass
+        self.X_train = X_train
+        self.y_train = y_train
 
 
 class MyRandomForestClassifier():
     def __init__(self, N: int, M: int | None=None, F: int | None=None):
         self.N = N
-        self.M = M
+        self.M = M if M is not None else N
         self.F = F
         self.X_train = None
         self.y_train = None

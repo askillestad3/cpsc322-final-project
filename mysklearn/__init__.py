@@ -8,6 +8,7 @@ Note: this is the package initializer for mysklearn
 from .myclassifiers import *
 from .myevaluation import *
 from .mypytable import *
+from .myrandomforestclassifier import *
 
 __all__ = [
     # Classifiers
