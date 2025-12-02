@@ -94,7 +94,7 @@ def plot_frequency_diagram(table, col_name):
     freq = {}
     for v in values:
         freq[v] = freq.get(v, 0) + 1
-    plt.bar(freq.keys(), freq.values())
+    plt.bar(freq.keys(), freq.values()) # type: ignore
     plt.xlabel(col_name)
     plt.ylabel("Frequency")
     plt.title(f"Frequency of {col_name}")
@@ -131,7 +131,7 @@ def plot_box_whisker_by_category(table, category_col, value_col):
             and row [table.column_names.index(value_col)] != "NA"
         ]
         data.append(cat_vals)
-    plt.boxplot(data, labels=categories)
+    plt.boxplot(data, label=categories)
     plt.xlabel(category_col)
     plt.ylabel(value_col)
     plt.title(f"{value_col} distribution by {category_col}")
