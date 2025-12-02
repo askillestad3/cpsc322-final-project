@@ -1,4 +1,22 @@
 
+"""
+myrandomforestclassifier.py
+
+Implements a Random Forest classifier built on top of a custom decision tree implementation. This
+module provides:
+
+1. `RandomForestDecisionTree`: A subclass of `MyDecisionTreeClassifier` from `myclassifiers.py`
+   that overrides the TDIDT recursive induction procedure to support random feature selection
+   (according to the `F` attribute)
+
+2. `MyRandomForestClassifier`: An ensemble classifier that trains `N` bootstrap decision trees,
+   optionally selects the top `M` trees by out-of-bag accuracy, and performs majority-vote
+   prediction.
+
+This module is based on pseudocode provided in the Final Project assignment description, authored
+Dr. Sophina Luitel. It does not depend on scikit-learn.
+"""
+
 import math
 
 import numpy as np
@@ -8,7 +26,24 @@ from .myevaluation import bootstrap_sample, accuracy_score
 from .myutils import calculate_entropy
 
 class RandomForestDecisionTree(MyDecisionTreeClassifier):
+    """A decision tree used within a random forest.
+
+    This class inherits from MyDecisionTreeClassifier and overrides the `_tdidt_recursive` method
+    so that each recursive split considers only `F` randomly selected attributes, following the
+    provided Random Forest algorithm.
+
+    Attributes:
+        F (optional int): The number of random attributes to consider at each node split. If `F` is
+            none or is greater than the number of available attributes, all attributes are used.
+    """
+
     def __init__(self, F: int | None=None):
+        """Initialize the RandomForestDecisionTree.
+        
+        Args:
+            F (optional int): Number of random attributes to consider per split. If None or greater
+                than number of available attributes, uses all attributes
+        """
         super().__init__()
         self.F = F
 
@@ -21,9 +56,11 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
             y_vals: list,
             prior_split_size: int
             ) -> list:
-        """Recursive function to perform top-down induction of a decision tree. Identical to that
-        used by MyDecisionTreeClassfier except that each iteration randomly selects F random
-        candidate attributes
+        """Recursively induce a decision tree using random feature selection.
+
+        This override of the base class method performs TDIDT (top-down induction of decision
+        trees), except that each recursive call restricts candidate splitting attributes to a
+        random subset of the available attributes of size `F`.
         
         Args:
             instances (list of int): The list of instances in the current split of tdidt
@@ -38,7 +75,11 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
                 recursive call, used to give the info for leaf nodes
 
         Returns:
-            subtree (list): The subtree corresponding to the current split in TDIDT
+            subtree (list): The subtree corresponding to the current split in TDIDT, represented in
+                the project's list-based tree format.
+
+        Raises:
+            ValueError: If X_train or y_train have not been initialized.
         """
         # Verify that X_train and y_train have been initialized
         if self.X_train is None or self.y_train is None:
@@ -127,7 +168,33 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
 
 
 class MyRandomForestClassifier():
+    """Random Forest classifier using custom decision trees.
+    
+    Trains `N` bootstrap decision trees, optionally selects the top `M` by out-of-bag accuracy, and
+    predicts by majority vote across the final set of trees.
+
+    Attributes:
+        N (int): Number of bootstrap decision trees to train
+        M (int): Number of tres to keep. If < `N`, selects the best `M` by out-of-bag
+            accuracy. If None or >= `N`, keeps all `N` trees
+        F (optional int): Number of random attributes considered per split in training each tree
+        X_train (list of list of obj | None): Training feature matrix
+        y_train (list of obj | None): Training label vector
+        trees(list of `RandomForestDecisionTree`): Final set of trained trees
+        _y_val_dist (dict from obj to int): Global distribution of y-values, used to break
+            prediction ties
+    """
+
     def __init__(self, N: int, M: int | None=None, F: int | None=None):
+        """Initialize the Random Forest classifier.
+        
+        Args:
+            N (int): Number of trees to train
+            M (optional int): Number of trees to keep after training. If None or >= `N`, keeps all
+                trees. If < `N`, selects the top `M` using out-of-bag accuracy
+            F (optional int): Number of random attributes to consider per split while training
+                decision trees
+        """
         self.N = N
         self.M = M if M is not None and M < N else N
         self.F = F
@@ -139,6 +206,20 @@ class MyRandomForestClassifier():
         self._y_val_dist = {}
 
     def fit(self, X_train: list[list], y_train: list):
+        """Fit the Random Forest to the training data.
+        
+        For each of `N` bootstrap samples:
+        - Train a `RandomForestDecisionTree`.
+        - If `M` < `N`, compute its out-of-bag accuracy.
+        - After all `N` trees are trained, optionally keep only the best `M`.
+
+        Args:
+            X_train (list of list of obj): Training feature matrix
+            y_train (list of obj): Training label vector
+
+        Raises:
+            RuntimeError: If `M` < `N` but accuracies were not computed (not expected to occur)
+        """
         # Set X_train and y_train attributes
         self.X_train = X_train
         self.y_train = y_train
@@ -195,6 +276,21 @@ class MyRandomForestClassifier():
         self.trees = [all_trees[i] for i in tree_accuracy_idx]
 
     def predict(self, X_test: list[list]) -> list:
+        """Predict labels for test data using majority vote among decision trees.
+        
+        Each tree predicts independently. The final label per instance is:
+        - The majority vote among all trees' predictions, or
+        - In case of ties, the globally most common training label among the tying labels
+
+        Args:
+            X_test (list of list of obj): Test feature rows
+
+        Returns:
+            y_pred (list): Predicted class labels for each test instance
+
+        Raises:
+            ValueError: If predict() is called before fit()
+        """
         # Verify that trees have been fitted
         if len(self.trees) == 0:
             raise ValueError("Cannot predict without fitted trees, try running fit() method first")
