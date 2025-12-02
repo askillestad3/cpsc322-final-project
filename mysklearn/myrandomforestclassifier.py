@@ -4,7 +4,7 @@ import math
 import numpy as np
 
 from .myclassifiers import MyDecisionTreeClassifier
-from .myevaluation import bootstrap_sample
+from .myevaluation import bootstrap_sample, accuracy_score
 from .myutils import calculate_entropy
 
 class RandomForestDecisionTree(MyDecisionTreeClassifier):
@@ -129,7 +129,7 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
 class MyRandomForestClassifier():
     def __init__(self, N: int, M: int | None=None, F: int | None=None):
         self.N = N
-        self.M = M if M is not None else N
+        self.M = M if M is not None and M < N else N
         self.F = F
         self.X_train = None
         self.y_train = None
@@ -143,7 +143,46 @@ class MyRandomForestClassifier():
         # Generate N boostrap samples
         bootstrap_samples = [tuple(bootstrap_sample(self.X_train, self.y_train)) for _ in range(self.N)]
 
+        # If M is less than M, make a new list for all trees and another for the accuracies
+        if self.M < self.N:
+            all_trees = []
+            tree_accuracies = []
+        else:
+            all_trees = self.trees
+            tree_accuracies = None
+
+        # Iterate through all bootstrap samples, training and testing trees (if needed)
+        for X_sample, X_out_of_bag, y_sample, y_out_of_bag in bootstrap_samples:
+            # Train a new decision tree
+            new_tree = RandomForestDecisionTree(self.F)
+            new_tree.fit(X_sample, y_sample)
+
+            # Add the new tree to the all trees list
+            all_trees.append(new_tree)
+
+            # If we're keeping track of accuracies (to narrow down to M), calculate now
+            if tree_accuracies is not None:
+                # Make predictions on X_out_of_bag
+                y_pred = new_tree.predict(X_out_of_bag)
+
+                # Calculate the accuracy and add to the list
+                tree_accuracies.append(accuracy_score(y_out_of_bag, y_pred))
+
+        # If we don't need to narrow down the trees, we're done here
+        if self.M == self.N:
+            return
         
+        # Use the tree accuracies to find the indices of the best trees
+        if tree_accuracies is None:
+            raise RuntimeError("M is less than N but tree accuracies were not calculated")
+        
+        tree_accuracy_idx = list(range(self.N))
+        tree_accuracy_idx.sort(key=lambda i: tree_accuracies[i], reverse=True)
+        tree_accuracy_idx = tree_accuracy_idx[:self.M]
+        tree_accuracy_idx.sort()
+
+        # Add all the best trees to the trees attribute
+        self.trees = [all_trees[i] for i in tree_accuracy_idx]
 
     def predict(self, X_test) -> list:
         return []
