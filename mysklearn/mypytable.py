@@ -557,3 +557,87 @@ class MyPyTable:
         for i, val in enumerate(column_vals):
             self.data[i].append(float((val - mean) / std_dev))
 
+    def add_equal_frequency_bins(self, column_name: str, num_bins: int) -> list[str]:
+        """Assigns each value in the specified column to an equal-frequency bin, saving bin assignments
+        as a new column named <column_name>_BIN
+
+        Parameters:
+            - column_name: The name of the attribute whose values need to be binned
+            - num_bins: The number of equal-width bins to be generated
+
+        Returns:
+            bin_ranges (list of str): A list of string labels representing the ranges of values in each
+                bin to 1 decimal place
+
+        Notes:
+            The binned values are added to a new column named "<column_name>_BIN"
+        """
+        # Validate number of bins
+        if num_bins < 1:
+            raise ValueError("num_bins must be 1 or more")
+
+        # Get all of the values for the specified column and sort in ascending order
+        column_vals = self.get_column(column_name, include_missing_values=False)
+        column_vals.sort()
+
+        # Ensure that the number of bins is not greater than the length of the column
+        if num_bins > len(column_vals):
+            raise ValueError("num_bins cannot be greater than the length of the column")
+
+        # Find the minimum number of elements per bin
+        min_bin_size = len(column_vals) // num_bins
+
+        # Find the number of bins that will need to hold one more value than the minimum
+        num_big_bins = len(column_vals) % num_bins
+
+        # Calculate the split points between bins
+        split_points = []
+        i = -1
+        while len(split_points) < num_bins - 1:
+            # If more big bins needed, count out a big bin
+            if num_big_bins > 0:
+                i += min_bin_size + 1
+                num_big_bins -= 1
+            else:
+                i += min_bin_size
+
+            # Set the split point halfway between the end of this bin and the start of the next
+            split_points.append((column_vals[i] + column_vals[i + 1]) / 2)
+
+        # Create a new column for bin assignments
+        self.column_names.append(f'{column_name}_BIN')
+
+        # Get the index of the specified column
+        column_idx = self.column_names.index(column_name)
+
+        # Assign each row to the appropriate bin
+        for row in self.data:
+            # Don't bin a missing value
+            if row[column_idx] == 'NA':
+                row.append('NA')
+                continue
+            i = 0
+            while i < len(split_points):
+                if row[column_idx] < split_points[i]:
+                    break
+                else:
+                    i += 1
+            row.append(i)
+
+        # Return the list of ranges for each bin
+        # Easy/weird case: only one bin
+        if num_bins == 1:
+            return ['all']
+        
+        # Add first bin range before first split point
+        bin_ranges = [f'<{split_points[0]:.1f}']
+
+        # Add middle bin ranges between split points
+        for i in range(1, len(split_points)):
+            bin_ranges.append(f'{split_points[i-1]:.1f}-{split_points[i]:.1f}')
+
+        # Add last bin range after last split point and return
+        bin_ranges.append(f'>{split_points[-1]:.1f}')
+
+        return bin_ranges
+
