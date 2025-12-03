@@ -563,6 +563,10 @@ class MyKNeighborsClassifier:
             neighbor_indices(list of list of int): 2D list of k nearest neighbor
                 indices in X_train (parallel to distances)
         """
+        # Verify that X_train is not None
+        if self.X_train is None:
+            raise ValueError("Cannot find nearest neighbors without training data. Try running fit() first")
+
         # Define both return lists
         distances = []
         indices = []
@@ -571,7 +575,7 @@ class MyKNeighborsClassifier:
         for A in X_test:
             # Calculate the distance from A to each training instance
             all_distances = []
-            for B in self.X_train if self.X_train is not None else []:  # Assume no training values for null X_train
+            for B in self.X_train:
                 all_distances.append(self.euclidean_distance(A, B))
 
             # Select the top-k shortest distances (as tuples with index and distance)
@@ -594,6 +598,10 @@ class MyKNeighborsClassifier:
         Returns:
             y_predicted(list of obj): The predicted target y values (parallel to X_test)
         """
+        # Verify y_train is not none
+        if self.y_train is None:
+            raise ValueError("Cannot make predictions without training data. Try running fit() first")
+
         # Define the list of class predictions
         y_predicted = []
 
@@ -603,7 +611,7 @@ class MyKNeighborsClassifier:
         # Make a prediction based on each set of neighbor indices
         for neighbor_set in indices:
             # Find the class (y) of each nearest neighbor
-            neighbor_ys = [self.y_train[i] for i in neighbor_set] if self.y_train is not None else []   # Assume no training data for y_train None
+            neighbor_ys = [self.y_train[i] for i in neighbor_set]
             
             # Predict the most common class
             y_freqs = myutils.get_value_frequencies(neighbor_ys)
