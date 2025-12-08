@@ -530,7 +530,7 @@ class MyPyTable:
         return train, test
     
 
-    def normalize_column(self, column_name: str):
+    def standardize_column(self, column_name: str):
         """This function takes in a numeric column name and generates a new column with the Z-score
         (number of standard deviations away from mean) for every value. Used for scaling attributes
         before using artificial intelligence algorithms.
@@ -539,7 +539,7 @@ class MyPyTable:
             - column_name: The name of the column to normalize
 
         Notes:
-            - The normalized value column is named <column_name>_NORM
+            - The standardized value column is named <column_name>_STD
         """
         # Verify that column_name is a column in the table
         if not column_name in self.column_names:
@@ -553,7 +553,7 @@ class MyPyTable:
         std_dev = np.std(column_vals)
 
         # Make a new column with the z-score for each value in column
-        self.column_names.append(column_name + '_NORM')
+        self.column_names.append(column_name + '_STD')
         for i, val in enumerate(column_vals):
             self.data[i].append(float((val - mean) / std_dev))
 
