@@ -32,13 +32,15 @@ def get_value_frequencies(value_list: list) -> dict:
     return frequency_dict
 
 
-def calculate_entropy(
+def calculate_entropy(y: list) -> float:
+    return 0.0
+
+
+def calculate_joint_entropy(
         X: list[list],
         y: list,
         instances: list[int],
-        attribute_idx: int,
-        attribute_vals: list,
-        y_vals: list
+        attribute_idx: int
         ) -> float:
     """Calculates the new entropy after splitting on a given attribute.
 
@@ -54,11 +56,8 @@ def calculate_entropy(
         entropy (float): The new entropy value (E_new) after splitting on the specified attribute
     """
     
-    # Find the frequencies of the attribute values provided
-    attribute_val_freq = {val: 0 for val in attribute_vals}
-    for i in instances:
-        attribute_val = X[i][attribute_idx]
-        attribute_val_freq[attribute_val] += 1
+    # Find the frequencies of the attribute values
+    attribute_val_freq = get_value_frequencies([X[i][attribute_idx] for i in instances])
 
     # Start entropy at 0
     entropy = 0.0
@@ -66,7 +65,7 @@ def calculate_entropy(
     # Calculate the entropy component for each distinct attribute value provided
     for attribute_val, attribute_freq in attribute_val_freq.items():
         # Dict to count occurrences of each y value for this attribute value
-        y_value_freq = {val: 0 for val in y_vals}
+        y_value_freq = {}
 
         # Iterate across instances to count y value occurrences
         for i in instances:
@@ -75,7 +74,10 @@ def calculate_entropy(
                 continue
 
             # Add 1 to the frequency count of corresponding y value
-            y_value_freq[y[i]] += 1
+            if y[i] in y_value_freq:
+                y_value_freq[y[i]] += 1
+            else:
+                y_value_freq[y[i]] = 1
 
         # Calculate this entropy component
         entropy_component = sum(0 if y_freq == 0 

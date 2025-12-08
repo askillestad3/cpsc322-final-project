@@ -23,7 +23,7 @@ import numpy as np
 
 from .myclassifiers import MyDecisionTreeClassifier
 from .myevaluation import bootstrap_sample, accuracy_score
-from .myutils import calculate_entropy
+from .myutils import get_value_frequencies, calculate_joint_entropy
 
 class RandomForestDecisionTree(MyDecisionTreeClassifier):
     """A decision tree used within a random forest.
@@ -53,7 +53,6 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
             instances: list[int],
             attributes: list[int],
             attribute_vals: list[list],
-            y_vals: list,
             prior_split_size: int
             ) -> list:
         """Recursively induce a decision tree using random feature selection.
@@ -85,14 +84,12 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
         if self.X_train is None or self.y_train is None:
             raise ValueError("Cannot induce a decision tree without X_train and y_train attributes")
         
+        # Find the frequency of each y value
+        y_value_freq = get_value_frequencies([self.y_train[i] for i in instances])
+        
         # Check if there are any remaining attributes
         if not attributes:
-            # Base case, find the frequency of each y value
-            y_value_freq = {val: 0 for val in y_vals}
-            for i in instances:
-                y_value_freq[self.y_train[i]] += 1
-
-            # Find the greatest frequency
+            # Find the greatest y value frequency
             greatest_y_freq = max(y_value_freq.values())
 
             # Find all y-values tying for the maximum frequency
@@ -110,10 +107,6 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
             return ["Leaf", best_tying_y, greatest_y_freq, prior_split_size]
         
         # Check if all the remaining instances already belong to the same class (base case)
-        y_value_freq = {val: 0 for val in y_vals}
-        for i in instances:
-            y_value_freq[self.y_train[i]] += 1
-
         if max(y_value_freq.values()) == sum(y_value_freq.values()):
             # All remaining instances belong to the same class (base case) return remaining class
             best_y = max(y_value_freq.items(), key=lambda t: t[1])[0]
@@ -130,9 +123,8 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
         best_attribute = -1
         for attribute_idx in reduced_attributes:
             # Calculate the new entropy for this attribute
-            new_entropy = calculate_entropy(self.X_train, self.y_train, instances,
-                                            attribute_idx, attribute_vals[attribute_idx],
-                                            y_vals)
+            new_entropy = calculate_joint_entropy(self.X_train, self.y_train, instances,
+                                                  attribute_idx)
             
             # Compare this attribute's new entropy to best found so far
             if new_entropy < best_new_entropy:
@@ -160,7 +152,7 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
             # Add subtree for this split value to subtree (recursive call)
             subtree.append(["Value", split_val, self._tdidt_recursive(split_indices,
                                                                       remaining_attributes,
-                                                                      attribute_vals, y_vals,
+                                                                      attribute_vals,
                                                                       len(instances))])
         
         # Return the resulting subtree

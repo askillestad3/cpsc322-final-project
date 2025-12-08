@@ -72,26 +72,16 @@ class MyDecisionTreeClassifier:
                 if val not in attribute_vals[i]:
                     attribute_vals[i].append(val)
 
-        # Find all possible y values
-        y_vals = []
-        for val in y_train:
-            if val not in y_vals:
-                y_vals.append(val)
-
-        # Sort all the possible attribute and y values (to match test cases)
+        # Sort all the possible attribute values (to match test cases)
         for val_list in attribute_vals:
             val_list.sort()
 
-        y_vals.sort()
-
         # Find the frequency distribution of the y values
-        self._y_val_dist = {val: 0 for val in y_vals}
-        for val in y_train:
-            self._y_val_dist[val] += 1
+        self._y_val_dist = myutils.get_value_frequencies(y_train)
 
         # Make the first recursive call to the TDIDT function and set the tree attribute
         self.tree = self._tdidt_recursive(list(range(len(X_train))), list(range(len(X_train[0]))),
-                                          attribute_vals, y_vals, len(X_train))
+                                          attribute_vals, len(X_train))
 
     def predict(self, X_test):
         """Makes predictions for test instances in X_test.
@@ -230,7 +220,6 @@ class MyDecisionTreeClassifier:
             instances: list[int],
             attributes: list[int],
             attribute_vals: list[list],
-            y_vals: list,
             prior_split_size: int
             ) -> list:
         """Recursive function to perform top-down induction of a decision tree.
@@ -254,14 +243,12 @@ class MyDecisionTreeClassifier:
         if self.X_train is None or self.y_train is None:
             raise ValueError("Cannot induce a decision tree without X_train and y_train attributes")
         
+        # Find the frequency of each y value
+        y_value_freq = myutils.get_value_frequencies([self.y_train[i] for i in instances])
+        
         # Check if there are any remaining attributes
         if not attributes:
-            # Base case, find the frequency of each y value
-            y_value_freq = {val: 0 for val in y_vals}
-            for i in instances:
-                y_value_freq[self.y_train[i]] += 1
-
-            # Find the greatest frequency
+            # Find the greatest y value frequency
             greatest_y_freq = max(y_value_freq.values())
 
             # Find all y-values tying for the maximum frequency
@@ -279,10 +266,6 @@ class MyDecisionTreeClassifier:
             return ["Leaf", best_tying_y, greatest_y_freq, prior_split_size]
         
         # Check if all the remaining instances already belong to the same class (base case)
-        y_value_freq = {val: 0 for val in y_vals}
-        for i in instances:
-            y_value_freq[self.y_train[i]] += 1
-
         if max(y_value_freq.values()) == sum(y_value_freq.values()):
             # All remaining instances belong to the same class (base case) return remaining class
             best_y = max(y_value_freq.items(), key=lambda t: t[1])[0]
@@ -293,9 +276,8 @@ class MyDecisionTreeClassifier:
         best_attribute = -1
         for attribute_idx in attributes:
             # Calculate the new entropy for this attribute
-            new_entropy = myutils.calculate_entropy(self.X_train, self.y_train, instances,
-                                                    attribute_idx, attribute_vals[attribute_idx],
-                                                    y_vals)
+            new_entropy = myutils.calculate_joint_entropy(self.X_train, self.y_train, instances,
+                                                          attribute_idx)
             
             # Compare this attribute's new entropy to best found so far
             if new_entropy < best_new_entropy:
@@ -323,7 +305,7 @@ class MyDecisionTreeClassifier:
             # Add subtree for this split value to subtree (recursive call)
             subtree.append(["Value", split_val, self._tdidt_recursive(split_indices,
                                                                       remaining_attributes,
-                                                                      attribute_vals, y_vals,
+                                                                      attribute_vals,
                                                                       len(instances))])
         
         # Return the resulting subtree
