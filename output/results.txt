@@ -12,7 +12,7 @@ Classifier                Train/Test      10-Fold CV      Stratified CV
 Dummy                      73.28%          67.09%          67.09%
 kNN                        73.28%          67.59%          68.35%
 Decision Tree              60.31%          57.97%          58.23%
-Random Forest              59.54%          67.34%          67.85%
+Random Forest              63.36%          67.34%          66.58%
 
 ======================================================================
 BEST CLASSIFIER: kNN
