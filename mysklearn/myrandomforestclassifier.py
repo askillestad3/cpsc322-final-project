@@ -86,6 +86,12 @@ class RandomForestDecisionTree(MyDecisionTreeClassifier):
         
         # Find the frequency of each y value
         y_value_freq = get_value_frequencies([self.y_train[i] for i in instances])
+
+        # Chech if there are any remaining instances
+        if not instances:
+            # Base case, return the leaf with the most common y globally in training data
+            most_common_y = max(self._y_val_dist.items(), key=lambda t: t[1])[0]
+            return ["Leaf", most_common_y, 0, prior_split_size]
         
         # Check if there are any remaining attributes
         if not attributes:

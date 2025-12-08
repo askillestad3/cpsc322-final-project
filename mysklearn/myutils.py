@@ -33,7 +33,24 @@ def get_value_frequencies(value_list: list) -> dict:
 
 
 def calculate_entropy(y: list) -> float:
-    return 0.0
+    """Calculates the entropy H(y) for a list of categorical values y.
+    
+    Args:
+        y (list of obj): The list of categorical values to calculate the entropy for
+
+    Returns:
+        H (float): The entropy of the y value 
+    """
+    # Get the value frequencies for each y value
+    y_value_freq = get_value_frequencies(y)
+
+    # Calculate the entropy (H)
+    H = 0.0
+    for count in y_value_freq.values():
+        p = count / len(y)
+        H -= p * math.log2(p)
+
+    return H
 
 
 def calculate_joint_entropy(
@@ -80,8 +97,7 @@ def calculate_joint_entropy(
                 y_value_freq[y[i]] = 1
 
         # Calculate this entropy component
-        entropy_component = sum(0 if y_freq == 0 
-                                else -y_freq / attribute_freq * math.log(y_freq / attribute_freq, 2)
+        entropy_component = sum(-y_freq / attribute_freq * math.log2(y_freq / attribute_freq)
                                 for y_freq in y_value_freq.values())
         entropy_component *= attribute_freq / len(instances)
 
