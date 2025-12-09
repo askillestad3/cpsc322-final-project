@@ -686,3 +686,54 @@ def mutual_information(X: list, Y: list) -> float:
 
     # Calculate and return the mutual information
     return calculate_entropy(Y) - calculate_joint_entropy(X_matrix, Y, list(range(len(X))), 0)
+
+
+def pearson_r(X: list, Y: list) -> float:
+    """Calculates the Pearson Correlation Coefficient (r) between two numerical columns.
+    
+    Args:
+        X (list of obj): The first list of numeric values, typically the predictor
+        Y (list of obj): The second list of numeric values, typically the response
+
+    Returns:
+        r (float): The Pearson correlation coefficient, ranging from -1 to 1 with -1 representing
+            a perfect negative correlation, 0 representing no correlation, and 1 representing a perfect
+            positive correlation
+
+    Notes:
+        - In the demonstration, this function is used for a binary response variable. We simply
+          code the binary variable as 0/1 and calculate as normal. There may be other methods more
+          appropriate for correlation with a binary response
+        - Pearson's Correlation Coefficient is a pretty standard statistical measure, but I grabbed
+          my equations from the following Wikipedia pages:
+          https://en.wikipedia.org/wiki/Pearson_correlation_coefficient AND
+          https://en.wikipedia.org/wiki/Covariance
+    """
+    # Verify that both lists have an equal, nonzero length
+    if len(X) == 0:
+        raise ValueError("Cannot calculate pearson r with empty list X")
+    if len(Y) == 0:
+        raise ValueError("Cannot calculate pearson r with empty list Y")
+    if len(X) != len(Y):
+        raise ValueError("Cannot calculate pearson r between lists of different length")
+
+    # Calculate the mean values for X and Y
+    mean_X = sum(X) / len(X)
+    mean_Y = sum(Y) / len(Y)
+
+    # Calculate the standard deviations for X and Y
+    std_X = float(np.std(X))
+    std_Y = float(np.std(Y))
+
+    # Calculate the list of pairwise products between X and Y
+    X_Y_pairwise = [x * y for x, y in zip(X, Y)]
+
+    # Calculate the mean pairwise product
+    mean_X_Y = sum(X_Y_pairwise) / len(X_Y_pairwise)
+
+    # Calculate covariance
+    covariance = mean_X_Y - mean_X * mean_Y
+
+    # Calculate and return pearson correlation coefficient
+    return covariance / (std_X * std_Y)
+
