@@ -4,6 +4,8 @@ from tabulate import tabulate
 
 import numpy as np # use numpy's random number generation
 
+from .myutils import calculate_entropy, calculate_joint_entropy
+
 def train_test_split(X, y, test_size=0.33, random_state=None, shuffle=True):
     """Split dataset into train and test sets based on a test set size.
 
@@ -659,3 +661,28 @@ def classification_report(y_true: list, y_pred: list, labels=None, output_dict: 
     # Tabulate and return the report table
     return tabulate(report_table, tablefmt="plain")
 
+
+def mutual_information(X: list, Y: list) -> float:
+    """Calculates the mutual information between categorical vectors X and Y.
+    
+    Args:
+        X (list of obj): The first list of categorical values, typically the predictor
+        Y (list of obj): The second list of categorical values, typically the response
+    
+    Return:
+        I (float): The mutual information between X and Y, equivalent to the information gain
+            between entropy and joint entropy
+
+    Notes:
+        This function is modeled off the equation in terms of entropy on this Wikipedia page:
+        https://en.wikipedia.org/wiki/Mutual_information
+    """
+    # Verify that X and Y are the same length
+    if len(X) != len(Y):
+        raise ValueError("Categorical vectors X and Y must be the same length")
+    
+    # Convert X into a 2D predictor matrix
+    X_matrix = [[x_val] for x_val in X]
+
+    # Calculate and return the mutual information
+    return calculate_entropy(Y) - calculate_joint_entropy(X_matrix, Y, list(range(len(X))), 0)
