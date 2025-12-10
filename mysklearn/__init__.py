@@ -27,6 +27,7 @@ __all__ = [
     'binary_f1_score',
     'mutual_information',
     'pearson_r',
+    'relieff_score',
     'classification_report',
     # Data handling
     'MyPyTable'
