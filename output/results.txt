@@ -10,11 +10,11 @@ CLASSIFIER PERFORMANCE SUMMARY
 Classifier                Train/Test      10-Fold CV      Stratified CV  
 ----------------------------------------------------------------------
 Dummy                      73.28%          67.09%          67.09%
-kNN                        73.28%          67.59%          68.35%
-Decision Tree              60.31%          57.97%          58.23%
-Random Forest              63.36%          67.34%          66.58%
+kNN                        68.70%          65.06%          66.33%
+Decision Tree              62.60%          60.00%          58.99%
+Random Forest              74.81%          68.86%          68.86%
 
 ======================================================================
-BEST CLASSIFIER: kNN
-Best Accuracy (Stratified 10-Fold CV): 68.35%
+BEST CLASSIFIER: Random Forest
+Best Accuracy (Stratified 10-Fold CV): 68.86%
 ======================================================================
