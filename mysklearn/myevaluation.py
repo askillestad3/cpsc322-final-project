@@ -737,3 +737,60 @@ def pearson_r(X: list, Y: list) -> float:
     # Calculate and return pearson correlation coefficient
     return covariance / (std_X * std_Y)
 
+
+def relieff_score(X: list[list], y: list, k: int) -> list[float]:
+    """Performs the ReliefF algorithm to find the usefulness of each feature in X at separating the
+    class labels in y.
+    
+    Args:
+        X (list of list of obj): The predictor matrix, where each row is an instance containing the
+            same number of standardized or normalized numeric features
+        y (list of obj): The response vector, assumed to be categorical
+        k (int): The number of nearest instances of the same and different class labels to consider
+            in calculating the score
+    
+    Returns:
+        weights (list of float): The score for each feature in X, which may be positive or negative,
+            higher values indicating a better discriminator of class labels
+    
+    Notes:
+        - It is assumed that all rows of X are the same length (algorithm will break if not)
+        - It is assumed that there are at least k + 1 instances of each class label in y (algorithm
+          will break if not)
+    """
+    # Verify that X and y are the same, nonzero length
+    if len(X) == 0:
+        raise ValueError("Cannot calculate reliefF score with empty list X")
+    if len(y) == 0:
+        raise ValueError("Cannot calculate reliefF score with empty list y")
+    if len(X) != len(y):
+        raise ValueError("Cannot calculate reliefF score between X and y of different length")
+    
+    # Find the dimensions of X, n and m
+    n, m = len(X), len(X[0])
+
+    # Set the initial weight vector
+    weights = [0.0 for _ in range(m)]
+
+    # Iterate through rows of X and labels in y
+    for i in range(n):
+        row, label = X[i], y[i]
+
+        # Find the L1 norm distance from this row to all other rows
+        distances = [sum(row[k] - X[j][k] for k in range(m)) for j in range(n)]
+
+        # Find the near hits (k nearestrows with same label)
+        near_hits = sorted(range(n), key=lambda j: distances[j] if j != i and y[j] == label else math.inf)[:k]
+
+        # Find the near misses (same but different labels)
+        near_misses = sorted(range(n), key=lambda j: distances[j] if j != i and y[i] != label else math.inf)[:k]
+
+        # Update the weights according to the near hits and near misses
+        for j in range(m):
+            for near_hit in near_hits:
+                weights[j] -= abs(row[j] - X[near_hit][j]) / k
+            for near_miss in near_misses:
+                weights[j] += abs(row[j] - X[near_miss][j]) / k
+
+    return weights
+
